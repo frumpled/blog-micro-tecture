@@ -41,7 +41,7 @@ func (p paymentServiceStripe) ProcessPayment(
 		return chargeID, err
 	}
 
-	transaction := createTransaction(*c.Amount, chargeID)
+	transaction := createTransaction(*c.Amount, chargeID, *c.Description)
 	err = p.transactionRepository.Save(transaction)
 
 	return chargeID, err
@@ -50,6 +50,7 @@ func (p paymentServiceStripe) ProcessPayment(
 func createTransaction(
 	amount int64,
 	vendorTransactionID string,
+	description string,
 ) stripe.Transfer {
 	return stripe.Transfer{
 		ID:      uuid.NewString(),
@@ -58,5 +59,6 @@ func createTransaction(
 		Metadata: map[string]string{
 			"vendor_transaction_id": vendorTransactionID,
 		},
+		Description: description,
 	}
 }

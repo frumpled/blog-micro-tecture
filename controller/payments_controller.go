@@ -67,5 +67,9 @@ func validateRequest(c *stripe.ChargeParams) error {
 		return errors.New("no source token")
 	}
 
+	if c.Description == nil || *c.Description == "" {
+		return errors.New("description is empty")
+	}
+
 	return nil
 }
