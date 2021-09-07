@@ -19,9 +19,10 @@ func (s StripeClient) ProcessPayment(
 	c model.Payment,
 ) (string, error) {
 	params := &stripe.ChargeParams{
-		Amount:   stripe.Int64(c.Amount),
-		Currency: stripe.String(string(stripe.CurrencyUSD)),
-		Source:   &stripe.SourceParams{Token: stripe.String(c.StripeToken)},
+		Amount:      stripe.Int64(c.Amount),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Source:      &stripe.SourceParams{Token: stripe.String(c.StripeToken)},
+		Description: stripe.String(c.Description),
 	}
 	params.AddMetadata("key", "value")
 

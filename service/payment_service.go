@@ -42,7 +42,7 @@ func (p paymentServiceStripe) ProcessPayment(
 		return chargeID, err
 	}
 
-	transaction := createTransaction(payment.Amount, chargeID)
+	transaction := createTransaction(payment.Amount, chargeID, payment.Description)
 	err = p.transactionRepository.Save(transaction)
 
 	return chargeID, err
@@ -51,11 +51,13 @@ func (p paymentServiceStripe) ProcessPayment(
 func createTransaction(
 	amount int64,
 	vendorTransactionID string,
+	description string,
 ) model.Transaction {
 	return model.Transaction{
 		ID:                  uuid.NewString(),
 		CreatedAt:           time.Now().Unix(),
 		Amount:              amount,
 		VendorTransactionID: vendorTransactionID,
+		Description:         description,
 	}
 }

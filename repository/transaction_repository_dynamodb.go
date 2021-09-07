@@ -29,6 +29,7 @@ func (t transactionRepositoryDynamoDB) Save(
 		SortKey:             sortKey,
 		VendorTransactionID: transaction.VendorTransactionID,
 		Amount:              transaction.Amount,
+		Description:         transaction.Description,
 	}
 
 	return t.ddbClient.save(txnData)

@@ -34,6 +34,7 @@ func (c pamentsController) processPayment(w http.ResponseWriter, r *http.Request
 	charge := model.Payment{
 		Amount:      processPaymentRequest.Amount,
 		StripeToken: processPaymentRequest.StripeToken,
+		Description: processPaymentRequest.Description,
 	}
 
 	chargeID, err := c.service.ProcessPayment(charge)
