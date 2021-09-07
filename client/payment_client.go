@@ -5,5 +5,5 @@ import (
 )
 
 type PaymentClient interface {
-	ProcessPayment(*stripe.ChargeParams) (string, error)
+	ProcessPayment(*stripe.PaymentIntentParams) (string, error)
 }

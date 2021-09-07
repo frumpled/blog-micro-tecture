@@ -39,13 +39,17 @@ type paymentServiceStripe struct {
 func (p paymentServiceStripe) ProcessPayment(
 	payment controller_model.ProcessPaymentRequest,
 ) (string, error) {
-	stripeChargeParams := &stripe.ChargeParams{
+	stripeParams := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(payment.Amount),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),
-		Source:   &stripe.SourceParams{Token: stripe.String(payment.StripeToken)},
+		PaymentMethodTypes: []*string{
+			stripe.String("card"),
+		},
+		Source:  stripe.String(payment.StripeToken),
+		Confirm: stripe.Bool(true),
 	}
 
-	chargeID, err := p.paymentClient.ProcessPayment(stripeChargeParams)
+	chargeID, err := p.paymentClient.ProcessPayment(stripeParams)
 
 	if err != nil {
 		log.Println("Error processing payment: " + err.Error())
