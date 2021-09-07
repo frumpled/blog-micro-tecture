@@ -40,9 +40,10 @@ func (p paymentServiceStripe) ProcessPayment(
 	payment controller_model.ProcessPaymentRequest,
 ) (string, error) {
 	stripeChargeParams := &stripe.ChargeParams{
-		Amount:   stripe.Int64(payment.Amount),
-		Currency: stripe.String(string(stripe.CurrencyUSD)),
-		Source:   &stripe.SourceParams{Token: stripe.String(payment.StripeToken)},
+		Amount:      stripe.Int64(payment.Amount),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Source:      &stripe.SourceParams{Token: stripe.String(payment.StripeToken)},
+		Description: stripe.String(payment.Description),
 	}
 
 	chargeID, err := p.paymentClient.ProcessPayment(stripeChargeParams)
@@ -52,7 +53,7 @@ func (p paymentServiceStripe) ProcessPayment(
 		return chargeID, err
 	}
 
-	transaction := createTransaction(payment.Amount, chargeID)
+	transaction := createTransaction(payment.Amount, chargeID, payment.Description)
 	err = p.transactionRepository.Save(transaction)
 
 	return chargeID, err
@@ -61,6 +62,7 @@ func (p paymentServiceStripe) ProcessPayment(
 func createTransaction(
 	amount int64,
 	vendorTransactionID string,
+	description string,
 ) repository_model.Transaction {
 	id := uuid.NewString()
 	createdAt := time.Now().Unix()
@@ -73,5 +75,6 @@ func createTransaction(
 		SortKey:             sortKey,
 		Amount:              amount,
 		VendorTransactionID: vendorTransactionID,
+		Description:         description,
 	}
 }
