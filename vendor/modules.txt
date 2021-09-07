@@ -56,5 +56,5 @@ github.com/jmespath/go-jmespath
 # github.com/stripe/stripe-go v70.15.0+incompatible
 ## explicit
 github.com/stripe/stripe-go
-github.com/stripe/stripe-go/charge
 github.com/stripe/stripe-go/form
+github.com/stripe/stripe-go/paymentintent

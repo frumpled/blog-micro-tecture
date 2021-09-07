@@ -4,10 +4,9 @@ import (
 	"errors"
 	"log"
 
+	"app/controller/model"
 	"app/service"
 	"net/http"
-
-	"github.com/stripe/stripe-go"
 )
 
 type pamentsController struct {
@@ -24,21 +23,24 @@ func (c pamentsController) processPayment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	stripeChargeParams, ok := request.(*stripe.ChargeParams)
+	paymentRequest, ok := request.(model.CreatePaymentRequest)
 	if !ok {
 		log.Println("Bad request")
 		encodeResponse(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	err = validateRequest(stripeChargeParams)
+	err = validateRequest(paymentRequest)
 	if err != nil {
 		log.Println("Error: " + err.Error())
 		encodeResponse(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	chargeID, err := c.service.ProcessPayment(stripeChargeParams)
+	paymentIntentID, err := c.service.ProcessPayment(
+		paymentRequest.Amount,
+		paymentRequest.StripeToken,
+	)
 	if err != nil {
 		log.Println("Error: " + err.Error())
 		encodeResponse(w, http.StatusInternalServerError, nil)
@@ -46,25 +48,21 @@ func (c pamentsController) processPayment(w http.ResponseWriter, r *http.Request
 	}
 
 	response := struct {
-		ChargeID string `json:"charge_id"`
+		PaymentIntentID string `json:"payment_intent_id"`
 	}{
-		ChargeID: chargeID,
+		PaymentIntentID: paymentIntentID,
 	}
 
 	encodeResponse(w, http.StatusOK, response)
 }
 
-func validateRequest(c *stripe.ChargeParams) error {
-	if c == nil {
-		return errors.New("empty request")
-	}
-
-	if c.Amount == nil || *c.Amount < 0 {
+func validateRequest(c model.CreatePaymentRequest) error {
+	if c.Amount <= 0 {
 		return errors.New("no amount given")
 	}
 
-	if c.Source.Token == nil || *c.Source.Token == "" {
-		return errors.New("no source token")
+	if c.StripeToken == "" {
+		return errors.New("no stripe token")
 	}
 
 	return nil

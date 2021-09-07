@@ -2,7 +2,7 @@ package client
 
 import (
 	stripe "github.com/stripe/stripe-go"
-	"github.com/stripe/stripe-go/charge"
+	"github.com/stripe/stripe-go/paymentintent"
 )
 
 type StripeClient struct{}
@@ -14,20 +14,22 @@ func NewPaymentClient(stripeKey string) PaymentClient {
 }
 
 func (s StripeClient) ProcessPayment(
-	c *stripe.ChargeParams,
+	amount int64,
+	stripeToken string,
 ) (string, error) {
-
-	ch, err := charge.New(c)
-
+	stripeParams := &stripe.PaymentIntentParams{
+		Amount:   stripe.Int64(amount),
+		Currency: stripe.String(string(stripe.CurrencyUSD)),
+		PaymentMethodTypes: []*string{
+			stripe.String("card"),
+		},
+		Source:  stripe.String(stripeToken),
+		Confirm: stripe.Bool(true),
+	}
+	pi, err := paymentintent.New(stripeParams)
 	if err != nil {
 		return "", err
 	}
 
-	cp := stripe.CaptureParams{
-		Amount: c.Amount,
-	}
-
-	ch, err = charge.Capture(ch.ID, &cp)
-
-	return ch.ID, err
+	return pi.ID, err
 }

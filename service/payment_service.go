@@ -12,7 +12,10 @@ import (
 
 // PaymentService provides core payment processing functions
 type PaymentService interface {
-	ProcessPayment(*stripe.ChargeParams) (string, error)
+	ProcessPayment(
+		int64,
+		string,
+	) (string, error)
 }
 
 // NewPaymentService provides a service to interact with a payment processor backed by a PaymentClient, abstracting a 3rd party vendor
@@ -32,19 +35,23 @@ type paymentServiceStripe struct {
 }
 
 func (p paymentServiceStripe) ProcessPayment(
-	c *stripe.ChargeParams,
+	amount int64,
+	stripeToken string,
 ) (string, error) {
-	chargeID, err := p.paymentClient.ProcessPayment(c)
+	paymentIntentID, err := p.paymentClient.ProcessPayment(
+		amount,
+		stripeToken,
+	)
 
 	if err != nil {
 		log.Println("Error processing payment: " + err.Error())
-		return chargeID, err
+		return paymentIntentID, err
 	}
 
-	transaction := createTransaction(*c.Amount, chargeID)
+	transaction := createTransaction(amount, paymentIntentID)
 	err = p.transactionRepository.Save(transaction)
 
-	return chargeID, err
+	return paymentIntentID, err
 }
 
 func createTransaction(
